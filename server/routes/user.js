@@ -9,6 +9,7 @@ const {
   forgotPassword,
   resetPassword,
 } = require('../controllers/userController');
+const verifyToken = require('../middlewares/auth');
 
 /**
  * @route   POST /api/auth/register
@@ -29,7 +30,7 @@ router.post('/login', loginUser);
  * @desc    Logout user (invalidate token or clear cookie)
  * @access  Private
  */
-router.post('/logout', logoutUser);
+router.post('/logout',verifyToken, logoutUser);
 
 /**
  * @route   POST /api/auth/forgot-password
