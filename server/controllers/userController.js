@@ -109,13 +109,24 @@ const loginUser = async (req, res) => {
  * @route   POST /api/auth/logout
  * @access  Private
  */
-const logoutUser = (req, res) => {};
+const logoutUser = (req, res) => {
+  try {
+    // 1️⃣ Supprimer le cookie si il existe
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+    res.status(200).json({
+      message: "Déconnexion réussie ✅",
+      logoutHeader: true, 
+    });
+  } catch (error) {
+    console.error("Logout Error:", error);
+    res.status(500).json({ message: "Erreur lors de la déconnexion" });
+  }
+};
 
-/**
- * @desc    Refresh authentication token
- * @route   GET /api/auth/refresh
- * @access  Private
- */
 const refreshToken = (req, res) => {};
 
 /**
