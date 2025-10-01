@@ -12,7 +12,7 @@ const jwt=require('jsonwebtoken')
  */
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { name, email, password, phone, itemtype } = req.body;
 
     // 1️⃣ Check if the user already exists
     const existingUser = await findUserByEmail(email);
@@ -26,6 +26,7 @@ const registerUser = async (req, res) => {
       email,
       password, // will be hashed automatically by pre("save") middleware
       phone,
+      itemtype: itemtype || 'student',
     });
 
     await user.save();
@@ -80,21 +81,28 @@ const loginUser = async (req, res) => {
 
     // 3️⃣ Générer un token
     const token = jwt.sign(
-  {
-    id: existingUser._id,
-    email: existingUser.email,
-    itemtype: existingUser.itemtype, 
-  },
-  process.env.JWT_SECRET,
-  { expiresIn: "7d" }
-);
+      {
+        id: existingUser._id,
+        email: existingUser.email,
+        itemtype: existingUser.itemtype, 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-    // 4️⃣ Exclure le password
-    const { password: pw, ...userData } = existingUser.toObject();
+    // 4️⃣ Exclure le password et s'assurer que itemtype est inclus
+    const userData = existingUser.toObject();
+    const { password: pw, ...userWithoutPassword } = userData;
+
+    // Garantir que itemtype est défini
+    const userResponse = {
+      ...userWithoutPassword,
+      itemtype: userWithoutPassword.itemtype || 'student'
+    };
 
     res.status(200).json({
       message: "Connexion réussie ✅",
-      user: userData,
+      user: userResponse, // Maintenant itemtype est garanti
       token
     });
   } catch (error) {
