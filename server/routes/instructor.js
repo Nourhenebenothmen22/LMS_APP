@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const instructorController = require('../controllers/instructorController');
 const upload = require('../middlewares/upload');
+const verifyToken=require('../middlewares/auth')
 
 router.post(
   '/',
@@ -18,7 +19,7 @@ router.post(
 router.get('/', instructorController.listInstructors);
 
 // Obtenir le profil d'un instructeur spécifique
-router.get('/:id', instructorController.getInstructorProfile);
+router.get('/:id',verifyToken, instructorController.getInstructorProfile);
 
 // Mettre à jour le profil d'un instructeur
 router.put('/:id', upload.fields([
