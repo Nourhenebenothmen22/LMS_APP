@@ -1,18 +1,25 @@
-const verifyRole = (...alloweditemtypes) => {
-  return (req, res, next) => {
-    console.log('User itemtype:', req.user.itemtype);
-    console.log('Allowed itemtypes:', alloweditemtypes);
+const verifyRole = (...allowedRoles) => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({ message: "Unauthorized: No user data" });
+        }
 
-    if (!req.user) 
-      return res.status(401).json({ message: "Unauthorized" });
+        // Debug logging
+        console.log('User role from token:', req.user.itemtype);
+        console.log('Allowed roles:', allowedRoles);
 
-    if (!alloweditemtypes.includes(req.user.itemtype)) {
-      return res
-        .status(403)
-        .json({ message: "Forbidden: You don\'t have access to this resource" });
-    }
+        if (!req.user.itemtype) {
+            return res.status(403).json({ message: "Forbidden: User role not defined" });
+        }
 
-    next();
-  };
+        if (!allowedRoles.includes(req.user.itemtype)) {
+            return res.status(403).json({ 
+                message: `Forbidden: ${req.user.itemtype} role cannot access this resource` 
+            });
+        }
+
+        next();
+    };
 };
-module.exports=verifyRole
+
+module.exports = verifyRole;
