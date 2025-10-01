@@ -65,26 +65,44 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const existingUser = findUserByEmail(email);
+
+    // 1️⃣ Vérifier si user existe
+    const existingUser = await findUserByEmail(email); 
     if (!existingUser) {
-      return res.status(400).json({ message: "Email not exist" });
+      return res.status(400).json({ message: "Email n'existe pas" });
     }
-    // 2️⃣ Compare password
+
+    // 2️⃣ Vérifier le mot de passe
     const isMatch = await bcrypt.compare(password, existingUser.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Incorrect password" });
+      return res.status(400).json({ message: "Mot de passe incorrect" });
     }
-    const token=jwt.sign({data:{email:existingUser.email,id:existingUser._id}})
-    // 3️⃣ Exclude password from response
+
+    // 3️⃣ Générer un token
+    const token = jwt.sign(
+  {
+    id: existingUser._id,
+    email: existingUser.email,
+    itemtype: existingUser.itemtype, 
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
+
+    // 4️⃣ Exclure le password
     const { password: pw, ...userData } = existingUser.toObject();
-    console.log(userData)
-     res.status(200).json({
-      message: 'Login successful',
+
+    res.status(200).json({
+      message: "Connexion réussie ✅",
       user: userData,
       token
     });
-  } catch (error) {}
+  } catch (error) {
+    console.error("Login Error:", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
 };
+
 
 /**
  * @desc    Logout user (invalidate token or clear cookie)
