@@ -4,6 +4,7 @@ const router = express.Router();
 const instructorController = require('../controllers/instructorController');
 const upload = require('../middlewares/upload');
 const verifyToken=require('../middlewares/auth')
+const verifyRole=require('../middlewares/role')
 
 router.post(
   '/',
@@ -19,7 +20,7 @@ router.post(
 router.get('/', instructorController.listInstructors);
 
 // Obtenir le profil d'un instructeur spécifique
-router.get('/:id',verifyToken, instructorController.getInstructorProfile);
+router.get('/:id',verifyToken,verifyRole('Instructor'), instructorController.getInstructorProfile);
 
 // Mettre à jour le profil d'un instructeur
 router.put('/:id', upload.fields([
